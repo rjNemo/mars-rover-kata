@@ -1,0 +1,16 @@
+test:
+  script:
+  - apt-get update -qy
+  - apt-get install -y python-dev python-pip
+  - pip install -r requirements.txt
+  - pytest -v tests
+
+staging:
+  type: deploy
+  script:
+  - apt-get update -qy
+  - apt-get install -y python-dev
+  - pip install -r requirements.txt
+  - dpl --provider=heroku --app=$HEROKU_STAGING_APP
+  only:
+  - master
