@@ -6,6 +6,7 @@ class Rover:
     x: int
     y: int
     direction: str
+    obstacles: list[list[int]] = dataclasses.field(default_factory=list)
 
     valid_commands = ("F", "B", "R", "L")
 
@@ -23,23 +24,46 @@ class Rover:
 
         return True
 
+    def is_obstacle(self, x: int, y: int):
+        return [x, y] in self.obstacles
+
     def move(self, command: str):
         if not self.is_valid_command(command):
             raise ValueError("invalid command. The rover does not move")
 
         for ch in command:
-            self._move_one_step(ch)
+            x, y, direction = self._compute_new_coordinates(ch)
+            if obstacle := self.is_obstacle(x, y):
+                return self.new_coordinates_output(obstacle)
 
+            self.apply_new_coordinates(x, y, direction)
+
+        return self.new_coordinates_output()
+
+    def new_coordinates_output(self, obstacle: bool = False):
+        if obstacle:
+            return self.x, self.y, self.direction, "STOPPED"
         return self.x, self.y, self.direction
 
-    def _move_one_step(self, command):
+    def _compute_new_coordinates(self, command):
+        x = self.x
+        y = self.y
+        direction = self.direction
+
         if command == "B":
-            self.x -= self.direction_map[self.direction][0]
-            self.y -= self.direction_map[self.direction][1]
+            x -= self.direction_map[self.direction][0]
+            y -= self.direction_map[self.direction][1]
         if command == "F":
-            self.x += self.direction_map[self.direction][0]
-            self.y += self.direction_map[self.direction][1]
+            x += self.direction_map[self.direction][0]
+            y += self.direction_map[self.direction][1]
         if command == "R":
-            self.direction = self.direction_map[self.direction][3]
+            direction = self.direction_map[self.direction][3]
         if command == "L":
-            self.direction = self.direction_map[self.direction][2]
+            direction = self.direction_map[self.direction][2]
+
+        return x, y, direction
+
+    def apply_new_coordinates(self, x, y, direction):
+        self.x = x
+        self.y = y
+        self.direction = direction

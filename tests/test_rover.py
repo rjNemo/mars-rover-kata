@@ -47,3 +47,31 @@ def test_rover_rejects_invalid_commands(rover):
 def test_rover_can_receive_multiple_commands(init, command, expected):
     rover = Rover(*init)
     assert rover.move(command) == expected
+
+
+@pytest.mark.parametrize(
+    ("init", "obstacles", "command", "expected"),
+    [
+        (
+            (0, 0, "NORTH"),
+            [[0, 1]],
+            "F",
+            (0, 0, "NORTH", "STOPPED"),
+        ),
+        (
+            (0, 0, "NORTH"),
+            [[1, 1]],
+            "FRF",
+            (0, 1, "EAST", "STOPPED"),
+        ),
+        (
+            (4, 2, "EAST"),
+            [[1, 4], [5, 5], [7, 4]],
+            "FLFFFRFLB",
+            (5, 4, "NORTH", "STOPPED"),
+        ),
+    ],
+)
+def test_rover_avoids_obstacles(init, obstacles, command, expected):
+    rover = Rover(*init, obstacles=obstacles)
+    assert rover.move(command) == expected
